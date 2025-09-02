@@ -47,17 +47,17 @@ export default function Unduhan() {
 
   return (
     <div className="min-h-screen">
-      <div className="relative h-80 md:h-96 lg:h-[38rem]">
+      <div className="relative md:h-96 lg:h-[38rem]">
         <img
           src="/img/banner-ft.png"
           alt=""
           className="w-full bg-cover h-full"
         />
-        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center p-10 -mt-9 md:-mt-20 lg:-mt-36">
-          <h1 className="text-white text-3xl md:text-5xl lg:text-6xl font-bold">
+        <div className="absolute top-0 left-0 right-0 bottom-0 flex flex-col justify-center p-2 md:p-10 -mt-9 md:-mt-20 lg:-mt-36 leading-5">
+          <h1 className="bg-gradient-to-r from-blue-700 to-purple-700 text-transparent w-fit bg-clip-text text-3xl md:text-5xl lg:text-6xl font-bold">
             Berkas Unduhan
           </h1>
-          <h2 className="text-white mt-3">
+          <h2 className="text-blue-700 mt-3">
             Berkas Penting{" "}
             {identitas?.find((item) => item.name === "Nama Fakultas")?.value}{" "}
             Universitas Bumigora

@@ -2,127 +2,127 @@
     {
         "id": 1,
         "name": "S1 Ilmu Komputer",
-        "Link": ""
+        "Link": "https://ilkom.universitasbumigora.ac.id"
 
     },
     {
         "id": 2,
         "name": "S1 Teknologi Informasi",
-        "Link": ""
+        "Link": "https://ti.universitasbumigora.ac.id"
 
     },
     {
         "id": 3,
         "name": "S1 Teknologi Pangan",
-        "Link": ""
+        "Link": "https://tekpang.universitasbumigora.ac.id"
 
     },
     {
         "id": 4,
         "name": "D3 Sistem Informasi",
-        "Link": ""
+        "Link": "https://d3si.universitasbumigora.ac.id"
 
     },
     {
         "id": 5,
         "name": "D3 Rekayasa Perangkat Lunak",
-        "Link": ""
+        "Link": "https://d3rpl.universitasbumigora.ac.id"
 
     },
     {
         "id": 6,
         "name": "S1 Rekayasa Perangkat Lunak",
-        "Link": ""
+        "Link": "https://rpl.universitasbumigora.ac.id"
 
     },
     {
         "id": 7,
         "name": "S1 Kedokteran",
-        "Link": ""
+        "Link": "https://fk.universitasbumigora.ac.id"
 
     },
     {
         "id": 8,
         "name": "Profesi Dokter",
-        "Link": ""
+        "Link": "https://fk.universitasbumigora.ac.id"
 
     },
     {
         "id": 9,
         "name": "S1 Gizi",
-        "Link": ""
+        "Link": "https://gizi.universitasbumigora.ac.id"
 
     },
     {
         "id": 10,
         "name": "S1 Farmasi",
-        "Link": ""
+        "Link": "https://farmasi.universitasbumigora.ac.id"
 
     },
     {
         "id": 11,
         "name": "S1 Hukum",
-        "Link": ""
+        "Link": "https://hukum.universitasbumigora.ac.idw"
 
     },
     {
         "id": 12,
         "name": "S1 Pariwisata",
-        "Link": ""
+        "Link": "https://pariwisata.universitasbumigora.ac.id"
 
     },
     {
         "id": 13,
         "name": "S1 Sastra Inggris",
-        "Link": ""
+        "Link": "https://sasing.universitasbumigora.ac.id"
 
     },
     {
         "id": 14,
         "name": "S1 Desain Komunikasi Visual",
-        "Link": ""
+        "Link": "https://dkv.universitasbumigora.ac.id"
 
     },
     {
         "id": 15,
         "name": "S1 Manajemen",
-        "Link": ""
+        "Link": "https://manajemen.universitasbumigora.ac.id"
 
     },
     {
         "id": 16,
         "name": "S1 Akuntansi",
-        "Link": ""
+        "Link": "https://akuntansi.universitasbumigora.ac.id"
 
     },
     {
         "id": 17,
         "name": "S1 Bisnis Digital",
-        "Link": ""
+        "Link": "https://bisnisdigital.universitasbumigora.ac.id"
 
     },
     {
         "id": 18,
         "name": "S1 Pendidikan Kepelatihan Olahraga",
-        "Link": ""
+        "Link": "https://pko.universitasbumigora.ac.id"
 
     },
     {
         "id": 19,
         "name": "S1 Pendidikan Teknologi Informasi",
-        "Link": ""
+        "Link": "https://pti.universitasbumigora.ac.id"
 
     },
     {
         "id": 20,
         "name": "S2 Ilmu Komputer",
-        "Link": "/prodi/s2IlmuKomputer"
+        "Link": "https://s2IlmuKomputer.universitasbumigora.ac.id"
 
     },
     {
         "id": 21,
         "name": "S2 Sastra Inggris",
-        "Link": "/prodi/s2SastraInggris"
+        "Link": "https://s2sasing.universitasbumigora.ac.id"
 
     }
 ]
