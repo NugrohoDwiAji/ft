@@ -88,7 +88,7 @@ const Footer = () => {
         {/* alamat dan logo */}
         <div className="lg:mt-8">
           <img
-            src="/img/pascasarjana.png"
+            src="/img/FT.png"
             alt=""
             className="text-white h-28 w-full"
           />
