@@ -64,7 +64,7 @@ export default function SideBar() {
             text={item.name}
             className={
               currentPath === item.url
-                ? "bg-blue-700/50 text-blue-700"
+                ? "bg-blue-200 text-blue-600"
                 : "bg-gray-300/70"
             }
           />

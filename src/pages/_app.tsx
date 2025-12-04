@@ -16,7 +16,8 @@ export default function App({ Component, pageProps }: AppProps) {
     currentPath === "/admin/berita"||
     currentPath === "/admin/dosen" ||
     currentPath === "/admin/prodi"||
-    currentPath === "/admin/faq";
+    currentPath === "/admin/faq"||
+    currentPath === "/viewer/[id]";
 
   return (
     <MainLayout

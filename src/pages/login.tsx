@@ -39,11 +39,11 @@ const handleLogin = async() => {
 
   const isDesktop = useIsDesktop();
   return isDesktop ? (
-    <div className="h-screen w-screen bg-radial-[at_50%_25%] from-purple-500 to-purple-800 to-75% flex justify-center items-center">
+    <div className="h-screen w-screen bg-radial-[at_50%_25%] from-blue-500 to-blue-800 to-75% flex justify-center items-center">
       
       <AuthLayout title="Login">
         <form action="" className="flex flex-col gap-3 mt-7 ">
-          <div className="flex items-center bg-gray-300 rounded-lg px-3 border-2 border-purple-400">
+          <div className="flex items-center bg-gray-300 rounded-lg px-3 border-2 border-blue-400">
             <label htmlFor="email">
               <User />
             </label>
@@ -56,7 +56,7 @@ const handleLogin = async() => {
               onChange={(e) => setKredensial({...kredensil, username: e.target.value})}
             />
           </div>
-          <div className="flex items-center bg-gray-300 rounded-lg px-3  border-2 border-purple-400">
+          <div className="flex items-center bg-gray-300 rounded-lg px-3  border-2 border-blue-400">
             <label htmlFor="password">
               <Lock />
             </label>
@@ -72,7 +72,7 @@ const handleLogin = async() => {
         </form>
         {isLogin && <h1 className="text-red-600 text-sm flex gap-1 items-center"><CircleAlert />Credensial Salah</h1>}
           <ButtonPrimary
-            ClassName="w-full bg-purple-700 py-3 text-white mt-10"
+            ClassName="w-full bg-blue-700 py-3 text-white mt-10"
             onClick={() => handleLogin()}
           >
             Login
