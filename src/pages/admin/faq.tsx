@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Search,
   Edit2,
@@ -22,18 +22,40 @@ type QuestionAnswer = {
 };
 
 export default function QuestionAnswerTable() {
-  // Sample data - dalam implementasi nyata, ini akan diambil dari database
   const [allData, setAllData] = useState<QuestionAnswer[]>([]);
-
-  const [filteredData, setFilteredData] = useState(allData);
+  const [filteredData, setFilteredData] = useState<QuestionAnswer[]>([]);
   const [isDelete, setIsDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [selectedItem, setSelectedItem] = useState<QuestionAnswer | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Filter data berdasarkan search term
+  // Fungsi untuk fetch data - gunakan useCallback untuk mencegah re-render berlebihan
+  const handleGetItem = useCallback(async () => {
+    if (loading) return; // Prevent multiple simultaneous requests
+    
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await axios.get("/api/faq");
+      setAllData(result.data);
+    } catch (error) {
+      console.error("Error fetching FAQ data:", error);
+      setError("Gagal memuat data FAQ");
+    } finally {
+      setLoading(false);
+    }
+  }, [loading]);
+
+  // useEffect untuk fetch data hanya sekali saat component mount
+  useEffect(() => {
+    handleGetItem();
+  }, []); // Empty dependency array - hanya jalankan sekali
+
+  // useEffect terpisah untuk filtering - tidak memanggil handleGetItem lagi
   useEffect(() => {
     const filtered = allData.filter(
       (item) =>
@@ -42,8 +64,7 @@ export default function QuestionAnswerTable() {
     );
     setFilteredData(filtered);
     setCurrentPage(1);
-    handleGetItem();
-  }, [searchTerm, allData]);
+  }, [searchTerm, allData]); // Hanya bergantung pada searchTerm dan allData
 
   // Pagination logic
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
@@ -51,7 +72,7 @@ export default function QuestionAnswerTable() {
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
 
-  const handleView = (item: QuestionAnswer ) => {
+  const handleView = (item: QuestionAnswer) => {
     setSelectedItem(item);
     setShowModal(true);
   };
@@ -60,16 +81,23 @@ export default function QuestionAnswerTable() {
     alert(`Edit item dengan ID: ${item.id}`);
   };
 
-  const handleDelete =async (item: QuestionAnswer) => {
+  const handleDelete = async (item: QuestionAnswer) => {
     if (confirm(`Yakin ingin menghapus pertanyaan: "${item.question}"?`)) {
       try {
+        setLoading(true);
         await axios.delete(`/api/faq?id=${item.id}`);
-         alert(`Item dengan ID ${item.id} dihapus (simulasi)`);
+        
+        // Update state lokal tanpa perlu fetch ulang
+        setAllData(prevData => prevData.filter(data => data.id !== item.id));
+        
+        alert(`Item dengan ID ${item.id} berhasil dihapus`);
       } catch (error) {
-        console.log(error)
+        console.error("Error deleting item:", error);
+        setError("Gagal menghapus item");
+      } finally {
+        setLoading(false);
       }
     }
-   
   };
 
   const truncateText = (text: string, maxLength: number) => {
@@ -78,13 +106,21 @@ export default function QuestionAnswerTable() {
       : text;
   };
 
-  const handleGetItem = async () => {
-    try {
-      const result = await axios.get("/api/faq");
-      setAllData(result.data);
-    } catch (error) {
-      console.log(error);
+  // Fungsi untuk refresh data manual jika diperlukan
+  const handleRefresh = () => {
+    handleGetItem();
+  };
+
+  // Fungsi callback setelah berhasil tambah/edit data
+  const handleDataUpdate = (newData?: QuestionAnswer) => {
+    if (newData) {
+      // Jika ada data baru, tambahkan ke state
+      setAllData(prevData => [...prevData, newData]);
+    } else {
+      // Jika tidak ada data baru, refresh data
+      handleGetItem();
     }
+    setIsDelete(false);
   };
 
   return (
@@ -103,6 +139,21 @@ export default function QuestionAnswerTable() {
               Kelola dan lihat semua data Q&A yang tersimpan
             </p>
           </div>
+
+          {/* Error Alert */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6">
+              <div className="flex items-center justify-between">
+                <span>{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Controls */}
           <div className="bg-white rounded-2xl shadow-lg border border-blue-100 p-6 mb-6">
@@ -133,7 +184,21 @@ export default function QuestionAnswerTable() {
                     <option value={20}>20</option>
                   </select>
                 </div>
-                <button onClick={() => setIsDelete(!isDelete)} className="inline-flex cursor-pointer  items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200">
+                
+                {/* Refresh Button */}
+                <button 
+                  onClick={handleRefresh} 
+                  disabled={loading}
+                  className="inline-flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-200 transition-all duration-200 disabled:opacity-50"
+                >
+                  <Database className="w-4 h-4" />
+                  {loading ? "Loading..." : "Refresh"}
+                </button>
+                
+                <button 
+                  onClick={() => setIsDelete(!isDelete)} 
+                  className="inline-flex cursor-pointer items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+                >
                   <Plus className="w-4 h-4" />
                   Tambah Baru
                 </button>
@@ -166,98 +231,108 @@ export default function QuestionAnswerTable() {
 
           {/* Table */}
           <div className="bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
-                    <th className="px-6 py-4 text-left text-sm font-semibold">
-                      #
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Pertanyaan
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Jawaban
-                    </th>
-                    <th className="px-6 py-4 text-left text-sm font-semibold">
-                      Tanggal Dibuat
-                    </th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold">
-                      Aksi
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentData.length > 0 ? (
-                    currentData.map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="border-b border-blue-50 hover:bg-blue-25 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">
-                          {startIndex + index + 1}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-800">
-                            {truncateText(item?.question, 80)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-600">
-                            {truncateText(item?.answer, 100)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {new Date(item?.created_at).toLocaleDateString("id-ID")}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => handleView(item)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Lihat Detail"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleEdit(item)}
-                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                              title="Edit"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(item)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Hapus"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+            {loading && (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                <p className="mt-2 text-gray-600">Memuat data...</p>
+              </div>
+            )}
+            
+            {!loading && (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                      <th className="px-6 py-4 text-left text-sm font-semibold">
+                        #
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">
+                        Pertanyaan
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">
+                        Jawaban
+                      </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold">
+                        Tanggal Dibuat
+                      </th>
+                      <th className="px-6 py-4 text-center text-sm font-semibold">
+                        Aksi
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentData.length > 0 ? (
+                      currentData.map((item, index) => (
+                        <tr
+                          key={item.id}
+                          className="border-b border-blue-50 hover:bg-blue-25 transition-colors"
+                        >
+                          <td className="px-6 py-4 text-sm text-gray-600 font-medium">
+                            {startIndex + index + 1}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-medium text-gray-800">
+                              {truncateText(item?.question, 80)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-600">
+                              {truncateText(item?.answer, 100)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">
+                            {new Date(item?.created_at).toLocaleDateString("id-ID")}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleView(item)}
+                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Lihat Detail"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleEdit(item)}
+                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(item)}
+                                disabled={loading}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                                title="Hapus"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center">
+                          <div className="text-gray-400">
+                            <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                            <p className="text-lg font-medium mb-2">
+                              Tidak ada data
+                            </p>
+                            <p className="text-sm">
+                              Coba ubah kata kunci pencarian atau tambah data baru
+                            </p>
                           </div>
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center">
-                        <div className="text-gray-400">
-                          <Database className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                          <p className="text-lg font-medium mb-2">
-                            Tidak ada data
-                          </p>
-                          <p className="text-sm">
-                            Coba ubah kata kunci pencarian atau tambah data baru
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {/* Pagination */}
-            {totalPages > 1 && (
+            {!loading && totalPages > 1 && (
               <div className="bg-gray-50 px-6 py-4 border-t border-blue-100">
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-gray-600">
@@ -360,14 +435,6 @@ export default function QuestionAnswerTable() {
                       )}
                     </p>
                   </div>
-                  {/* <div>
-                    <span className="text-gray-500">Diperbarui:</span>
-                    <p className="text-gray-800 font-medium">
-                      {new Date(selectedItem.updated_at).toLocaleDateString(
-                        "id-ID"
-                      )}
-                    </p>
-                  </div> */}
                 </div>
                 <div className="flex gap-3">
                   <button
@@ -389,7 +456,12 @@ export default function QuestionAnswerTable() {
         )}
       </div>
       <div className="absolute right-0 left-0 top-20">
-        {isDelete && <FormFaq cancel={()=>setIsDelete(!isDelete)}/>}      </div>
+        {isDelete && (
+          <FormFaq 
+            cancel={() => setIsDelete(!isDelete)}
+          />
+        )}
+      </div>
     </AdminLayout>
   );
 }

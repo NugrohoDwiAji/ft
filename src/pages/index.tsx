@@ -232,10 +232,11 @@ export default function Home() {
           Berita
         </h1>
         <hr className="border-t-[3px] border-blue-700 w-[20%] md:w-[15%] lg:w-[6%]  mb-5" />
-        <div className="w-full">
+        <div className="w-full ">
+          <center>
           <Carausel>
-            {dataBerita.map((item, index) => (
-              <div key={index} className="my-4">
+            {dataBerita.slice(0, 6).map((item, index) => (
+              <div key={index} className="my-4 w-full ">
                 <CardBerita
                   key={index}
                   img={item.filepath}
@@ -247,6 +248,7 @@ export default function Home() {
               </div>
             ))}
           </Carausel>
+          </center>
           <div className="mt-10 w-full flex justify-center">
             <ButtonPrimary
               ClassName="bg-blue-700 text-white hover:text-blue-700 hover:bg-white hover:border-2 hover:border-blue-700 font-semibold ease-in-out duration-300 transition-all"

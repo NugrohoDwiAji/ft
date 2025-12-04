@@ -1,7 +1,7 @@
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Children } from "react";
 
 type Props = {
   children: React.ReactNode;
@@ -11,6 +11,9 @@ export default function Carousel({children}:Props):React.JSX.Element {
   const [currentSlide, setcurrentSlide] = useState(0)
   const [arrows, setarrows] = useState(false)
   const [slidesToShow, setSlidesToShow] = useState(4)
+  
+  // Hitung jumlah children
+  const childrenCount = Children.count(children);
 
   // Deteksi ukuran layar dan ubah slidesToShow
   useEffect(() => {
@@ -38,17 +41,17 @@ export default function Carousel({children}:Props):React.JSX.Element {
   }, []);
 
   const settings = {
-    dots: true,
-    infinite: true,
+    dots: childrenCount > 1, // Hanya tampilkan dots jika lebih dari 1 item
+    infinite: childrenCount > slidesToShow, // Infinite hanya jika item > slidesToShow
     speed: 500,
-    slidesToShow: slidesToShow,
+    slidesToShow: Math.min(slidesToShow, childrenCount), // Jangan melebihi jumlah item
     slidesToScroll: 1,
     centerPadding: "0px",
-    centerMode: true,
-    autoplay: true,
+    centerMode: childrenCount > slidesToShow, // Center mode hanya jika item > slidesToShow
+    autoplay: childrenCount > 1, // Autoplay hanya jika lebih dari 1 item
     autoplaySpeed: 3000,
     afterChange: (index: number) => setcurrentSlide(index),
-    arrows: arrows,
+    arrows: arrows && childrenCount > slidesToShow, // Arrows hanya jika item > slidesToShow
     customPaging: (i: number) => (
       <div className={`w-2 h-2 mx-1 mt-4 rounded-full  ${currentSlide === i ? "bg-blue-950" : "bg-gray-300/70"}  transition-all duration-300 ease-in-out`} />
     ),
@@ -57,32 +60,48 @@ export default function Carousel({children}:Props):React.JSX.Element {
       {
         breakpoint: 768,
         settings: {
-          slidesToShow: 1,
+          slidesToShow: Math.min(1, childrenCount),
           slidesToScroll: 1,
-          centerMode: true,
+          centerMode: childrenCount > 1,
+          infinite: childrenCount > 1,
         }
       },
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: 2,
+          slidesToShow: Math.min(2, childrenCount),
           slidesToScroll: 1,
-          centerMode: true,
+          centerMode: childrenCount > 2,
+          centerPadding: "0px",
+          infinite: childrenCount > 2,
         }
       },
       {
         breakpoint: 1280,
         settings: {
-          slidesToShow: 3,
+          slidesToShow: Math.min(3, childrenCount),
           slidesToScroll: 1,
-          centerMode: true,
+          centerMode: childrenCount > 3,
+          centerPadding: "0px",
+          infinite: childrenCount > 3,
         }
       }
     ]
   };
 
+  // Jika hanya 1 item, render tanpa slider
+  if (childrenCount === 1) {
+    return (
+      <div className="relative m-auto">
+        <div className="flex justify-center">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative px-4 md:px-8 lg:px-12 xl:px-20 mx-auto">
+    <div className="relative m-auto">
       <Slider {...settings}>
         {children}
       </Slider>

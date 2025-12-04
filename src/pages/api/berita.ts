@@ -12,30 +12,42 @@ export const config = {
 
 // Helper untuk memastikan folder uploads ada
 const createUploadDir = (dir: string) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Directory created: ${dir}`);
+    }
+  } catch (error) {
+    console.error("Error creating directory:", error);
+    throw new Error("Gagal membuat direktori upload");
   }
 };
 
-const handlePostMethode = async (req: NextApiRequest, res: NextApiResponse) => {
-
-    const uploadPath = "/home/ft/uploads/berita";
-  createUploadDir(uploadPath);
-
-  const form = formidable({
-    uploadDir: uploadPath,
-    filename: (_, __, part) => {
-      return `${part.originalFilename}`;
-    },
-  });
-
+const handlePostMethod = async (req: NextApiRequest, res: NextApiResponse) => {
+  const uploadPath = path.join(process.cwd(), "public", "berita");
+  
   try {
+    // Pastikan folder upload ada
+    createUploadDir(uploadPath);
+
+    const form = formidable({
+      uploadDir: uploadPath,
+      keepExtensions: true,
+      maxFileSize: 10 * 1024 * 1024, // 10MB
+      filename: (name, ext, part) => {
+        // Buat nama file unik dengan timestamp
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        return `${uniqueSuffix}-${part.originalFilename}`;
+      },
+    });
+
     const { fields, files } = await new Promise<{
       fields: Fields;
       files: Files;
     }>((resolve, reject) => {
       form.parse(req, (err, fields, files) => {
         if (err) {
+          console.error("Formidable parse error:", err);
           reject(err);
           return;
         }
@@ -43,16 +55,42 @@ const handlePostMethode = async (req: NextApiRequest, res: NextApiResponse) => {
       });
     });
 
-    if (!files.file)
-      return res.status(400).json({ error: "File tidak ditemukan" });
+    // Validasi file
+    if (!files.file) {
+      return res.status(400).json({ 
+        error: "File tidak ditemukan",
+        message: "Tidak ada file yang diupload" 
+      });
+    }
 
     const file = Array.isArray(files.file) ? files.file[0] : files.file;
-    const filePath = `/uploads/berita/${file?.originalFilename}`;
+
+    // Validasi apakah file berhasil diupload
+    if (!file || !file.filepath) {
+      return res.status(500).json({ 
+        error: "File gagal tersimpan",
+        message: "File tidak dapat disimpan ke server" 
+      });
+    }
+
+    // Verifikasi file benar-benar ada di filesystem
+    if (!fs.existsSync(file.filepath)) {
+      return res.status(500).json({ 
+        error: "File tidak ditemukan setelah upload",
+        message: "File gagal tersimpan di server" 
+      });
+    }
+
+    // Ambil nama file yang tersimpan
+    const savedFileName = path.basename(file.filepath);
+    const filePath = `/berita/${savedFileName}`; // Path relatif untuk akses public
+
     const titletmp = fields.title?.toString();
-    const title = titletmp || "utitled";
+    const title = titletmp || "untitled";
     const desc = fields.description?.toString() || "description";
-    const date = fields.tanggal?.toString() || "date";
-  
+    const date = fields.tanggal?.toString() || new Date().toISOString();
+
+    // Simpan info file ke database
     const saved = await prisma.berita.create({
       data: {
         title: title,
@@ -61,10 +99,35 @@ const handlePostMethode = async (req: NextApiRequest, res: NextApiResponse) => {
         uploudat: date,
       },
     });
-    res.status(202).json(saved);
+
+    console.log("File berhasil disimpan:", {
+      filename: savedFileName,
+      path: file.filepath,
+      size: file.size,
+    });
+
+    return res.status(201).json({
+      success: true,
+      data: saved,
+      message: "File berhasil diupload",
+    });
+
   } catch (error) {
     console.error("Error saving file:", error);
-    return res.status(500).json({ error: "Error saving file" });
+    
+    // Hapus file jika ada error saat menyimpan ke database
+    if (error instanceof Error) {
+      return res.status(500).json({ 
+        error: "Error saving file",
+        message: error.message,
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+    
+    return res.status(500).json({ 
+      error: "Error saving file",
+      message: "Terjadi kesalahan saat menyimpan file" 
+    });
   }
 };
 
@@ -82,15 +145,20 @@ const handleGetMethode = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-
-
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method === "POST") {
-        return handlePostMethode(req, res);
-    }
-    if (req.method === "GET") {
-        return handleGetMethode(req, res);
-    } else {
-        res.status(405).json({ message: "Method not allowed" });
-    }
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method === "POST") {
+    return handlePostMethod(req, res);
+  } 
+  
+  if (req.method === "GET") {
+    return handleGetMethode(req, res);
+  }
+  
+  return res.status(405).json({ 
+    error: "Method not allowed",
+    message: `Method ${req.method} tidak diizinkan` 
+  });
 }
