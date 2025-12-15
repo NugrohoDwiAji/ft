@@ -91,7 +91,7 @@ export default function Unduhan() {
           <h1 className="bg-gradient-to-r from-blue-700 to bg-purple-800 text-transparent bg-clip-text text-3xl md:text-5xl lg:text-6xl font-bold w-fit">
             Berkas Unduhan
           </h1>
-          <h2 className="text-white mt-3">
+          <h2 className="text-blue-700 mt-3">
             Berkas Penting{" "}
             {identitas?.find((item) => item.name === "Nama Fakultas")?.value}{" "}
             Universitas Bumigora

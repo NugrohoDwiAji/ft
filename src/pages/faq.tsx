@@ -56,8 +56,7 @@ const Faq = () => {
               Frequently Asked Questions
             </h1>
             <h2 className="text-gray-700 mt-3">
-              FAQ
-              {identitas?.find((item) => item.name === "Nama Fakultas")?.value}{" "}
+              FAQ {identitas?.find((item) => item.name === "Nama Fakultas")?.value}{" "}
               Universitas Bumigora
             </h2>
           </div>
