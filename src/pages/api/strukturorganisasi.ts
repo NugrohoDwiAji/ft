@@ -18,7 +18,7 @@ const createUploadDir = (dir: string) => {
 };
 
 const handlePutMethod = async (req: NextApiRequest, res: NextApiResponse) => {
-  const uploadPath = "/home/ft/uploads/img";
+  const uploadPath = path.join(process.cwd(), "public", "berkas");
 
   createUploadDir(uploadPath);
 
@@ -47,7 +47,7 @@ const handlePutMethod = async (req: NextApiRequest, res: NextApiResponse) => {
       return res.status(400).json({ error: "File tidak ditemukan" });
 
     const file = Array.isArray(files.file) ? files.file[0] : files.file;
-    const filePath = `/uploads/img/${file?.originalFilename}`;
+    const filePath = `/berkas/${file?.originalFilename}`;
     const titletmp = fields.title?.toString();
     const title = titletmp || "utitled";
 
@@ -74,17 +74,17 @@ const handleGetMethode = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-const handleGetById = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id } = req.query;
-  try {
-    const result = await prisma.pengumuman.findUnique({
-      where: { id: id as string },
-    });
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: "Error fetching content" });
-  }
-}
+// const handleGetById = async (req: NextApiRequest, res: NextApiResponse) => {
+//   const { id } = req.query;
+//   try {
+//     const result = await prisma.pengumuman.findUnique({
+//       where: { id: id as string },
+//     });
+//     res.status(200).json(result);
+//   } catch (error) {
+//     res.status(500).json({ error: "Error fetching content" });
+//   }
+// }
   
 
   export default function handler(req: NextApiRequest, res: NextApiResponse) {
